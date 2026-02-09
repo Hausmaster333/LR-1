@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 typedef struct {
     size_t elem_size;
@@ -76,10 +77,20 @@ void da_free(DynamicArray* da) {
 }
 
 void* da_get(DynamicArray* da, size_t index) { // Возвращает указатель на элемент по индексу
+
+    if (index >= da->size) { // Проверка на выход за пределы массива
+        return NULL;
+    }
+    
     return (char*)da->data + index * da->elem_size; // Адрес элемента
 }
 
 void da_append(DynamicArray* da, void* elem) {
+
+    if (da == NULL) {
+        return;
+    }
+
     if (da->size >= da->capacity) {
         da->capacity *= 2;
         void* tmp_data = realloc(da->data, da->capacity * da->elem_size);
@@ -105,40 +116,43 @@ void da_print(DynamicArray* da) {
 }
 
 DynamicArray* da_concat(DynamicArray* a, DynamicArray* b) {
-    if (a->fieldinfo == b->fieldinfo) {
-        DynamicArray* ab = (DynamicArray*)malloc(sizeof(DynamicArray));
 
-        if (ab == NULL) {
-            return NULL;
+    if (a != NULL && b != NULL) {
+        if (a->fieldinfo == b->fieldinfo) {
+            DynamicArray* ab = (DynamicArray*)malloc(sizeof(DynamicArray));
+
+            if (ab == NULL) {
+                return NULL;
+            }
+
+            ab->capacity = a->size + b->size;
+            ab->elem_size = a->elem_size;
+            ab->size = 0;
+            ab->fieldinfo = a->fieldinfo;
+
+            ab->data = malloc(ab->capacity * ab->elem_size);
+
+            if (ab->data == NULL) {
+                free(ab);
+                return NULL;
+            }
+
+            for (int j = 0; j < a->size; j++) {
+                memcpy(da_get(ab, ab->size), da_get(a, j), ab->elem_size);
+                ab->size++;
+            }
+            
+            for (int k = 0; k < b->size; k++) {
+                memcpy(da_get(ab, ab->size), da_get(b, k), ab->elem_size);
+                ab->size++;
+            }
+
+            // Дописать оптимизацию(как-то можно копировать целые блоки через memcpy) за два вызова
+
+            return ab;
         }
-
-        ab->capacity = a->size + b->size;
-        ab->elem_size = a->elem_size;
-        ab->size = 0;
-        ab->fieldinfo = a->fieldinfo;
-
-        ab->data = malloc(ab->capacity * ab->elem_size);
-
-        if (ab->data == NULL) {
-            free(ab);
-            return NULL;
-        }
-
-        for (int j = 0; j < a->size; j++) {
-            memcpy(da_get(ab, ab->size), da_get(a, j), ab->elem_size);
-            ab->size++;
-        }
-        
-        for (int k = 0; k < b->size; k++) {
-            memcpy(da_get(ab, ab->size), da_get(b, k), ab->elem_size);
-            ab->size++;
-        }
-
-        // Дописать оптимизацию(как-то можно копировать целые блоки через memcpy) за два вызова
-
-        return ab;
+        return NULL;
     }
-
     return NULL;
 }
 
@@ -185,8 +199,6 @@ void da_sort(DynamicArray* da) {
     qsort(da->data, da->size, da->elem_size, da->fieldinfo->compare);
 }
 
-
-
 int is_positive(const void* elem) {
     return *(double*)elem > 0;
 }
@@ -194,6 +206,117 @@ int is_positive(const void* elem) {
 void square_double(const void* src, void* dest) {
     *(double*)dest = *(double*)src * *(double*)src;
 }
+
+void test_append() {
+
+    printf("START test_append\n");
+
+    FieldInfo double_info = {
+        .compare = compare_double,
+        .elem_size = sizeof(double),
+        .print = print_double
+    };
+
+    DynamicArray* da = da_create(&double_info);
+
+    int capacity = 6;
+
+    for (int i = 0; i < capacity; i++) {
+        double value = i + capacity;
+        da_append(da, &value);
+
+        assert(*(double*)da_get(da, i) == value);
+    }
+
+    assert(da->size == 6);
+
+    da_free(da);
+
+    printf("test_append PASSED\n");
+}
+
+void test_concat() {
+
+    printf("START test_concat\n");
+
+    FieldInfo double_info = {
+        .elem_size = sizeof(double),
+        .compare = compare_double,
+        .print = print_double,
+    };
+
+    DynamicArray* a = da_create(&double_info);
+    DynamicArray* b = da_create(&double_info);
+
+    int capacity = 6;
+
+
+    for (int i = 0; i < capacity; i++) {
+        double val_1 = i + capacity;
+        double val_2 = i + 2 * capacity;
+        da_append(a, &val_1);
+        da_append(b, &val_2);
+    }
+
+    DynamicArray* concat_da = da_concat(a, b);
+
+    assert(concat_da->size == a->size + b->size);
+
+
+    for (int i = 0; i < a->size; i++) {
+        assert(*(double*)da_get(concat_da, i) == *(double*)da_get(a, i));
+    }
+
+    int g = 0;
+
+    for (int i = a->size; i < concat_da->size; i++) {
+        assert(*(double*)da_get(concat_da, i) == *(double*)da_get(b, g));
+        g++;
+    }
+
+    da_free(a);
+    da_free(b);
+    da_free(concat_da);
+
+    printf("test_concat PASSED\n");
+
+}
+
+void test_where() {
+
+    printf("START test_where\n");
+
+    FieldInfo double_info = {
+      .elem_size = sizeof(double),
+      .compare = compare_double,
+      .print = print_double
+    };
+
+    DynamicArray* da = da_create(&double_info);
+
+    int capacity = 6;
+    double val1 = 5.0;
+
+    for (int i = 0; i < capacity; i++) {
+        double value = -100 + i;
+        da_append(da, &value);
+    }
+    da_append(da, &val1);
+
+    DynamicArray* where_da = da_where(da, is_positive);
+
+    for (int i = 0; i < where_da->size; i++) {
+        assert(*(double*)da_get(where_da, i) > 0);
+    }
+    
+    assert(where_da->size == 1);
+
+    da_free(da);
+    da_free(where_da);
+
+    printf("test_where PASSED\n");
+}
+
 
 int main() {
 
@@ -246,6 +369,7 @@ int main() {
 
     da_sort(da);
     da_print(da);
+    printf("\n");
     // for (int i = 0; i < da->size; i++) {
     //     printf("%lf ", *(double*)da_get(da, i)); // Вычисляем адрес через char, потом приводим к нужному типу указателя и разыменовываем
     // }
@@ -254,6 +378,10 @@ int main() {
     da_free(da);
     da_free(map_da);
     da_free(where_da);
+
+    test_append();
+    test_concat();
+    test_where();
 
     return 0;
 }
