@@ -7,6 +7,8 @@ typedef struct {
     size_t elem_size;
     void (*print)(const void* elem); // Вызывает функцию для вывода элементов массива
     int (*compare)(const void* a, const void* b);
+    void (*square)(const void* dest, void* src);
+    int (*is_positive)(const void* elem);
 } FieldInfo;
 
 void print_int(const void* elem) {
@@ -25,6 +27,14 @@ int compare_int(const void* val_a, const void* val_b) {
     } else return -1;
 }
 
+void square_int(const void* src, void* dest) {
+    *(int*)dest = *(int*)src * *(int*)src;
+}
+
+int is_positive_int(const void* elem) {
+    return *(int*)elem > 0;
+}
+
 void print_double(const void* elem) {
     printf("%lf ", *(double*)(elem));
 }
@@ -39,6 +49,14 @@ int compare_double(const void* val_a, const void* val_b) {
     {
         return 1;
     } else return -1;
+}
+
+void square_double(const void* src, void* dest) {
+    *(double*)dest = *(double*)src * *(double*)src;
+}
+
+int is_positive_double(const void* elem) {
+    return *(double*)elem > 0;
 }
 
 typedef struct {
@@ -85,6 +103,10 @@ void* da_get(DynamicArray* da, size_t index) { // Возвращает указ�
     return (char*)da->data + index * da->elem_size; // Адрес элемента
 }
 
+static void* da_get_ptr(DynamicArray* da, size_t index) { // Возвращает указатель на элемент по индексу 
+    return (char*)da->data + index * da->elem_size;
+}
+
 void da_append(DynamicArray* da, void* elem) {
 
     if (da == NULL) {
@@ -103,7 +125,7 @@ void da_append(DynamicArray* da, void* elem) {
         da->data = tmp_data;
     }
     
-    memcpy(da_get(da, da->size), elem, da->elem_size); // куда, откуда, размер. Куда определяем через приведение к байтам
+    memcpy(da_get_ptr(da, da->size), elem, da->elem_size); // куда, откуда, размер. Куда определяем через приведение к байтам
                                                                             // (0 элемент + сдвиг по байтам, который текущий размер + размер эл. в байтах)
     da->size++;
 }
@@ -111,8 +133,12 @@ void da_append(DynamicArray* da, void* elem) {
 void da_print(DynamicArray* da) {
     
     for (int i = 0; i < da->size; i++) {
-        da->fieldinfo->print(da_get(da, i)); // Вызываем функцию по указателю
+        da->fieldinfo->print(da_get_ptr(da, i)); // Вызываем функцию по указателю
     }
+}
+
+void da_square(DynamicArray* da, const void* dest, void* src) {
+    da->fieldinfo->square(dest, src);
 }
 
 DynamicArray* da_concat(DynamicArray* a, DynamicArray* b) {
@@ -138,12 +164,12 @@ DynamicArray* da_concat(DynamicArray* a, DynamicArray* b) {
             }
 
             for (int j = 0; j < a->size; j++) {
-                memcpy(da_get(ab, ab->size), da_get(a, j), ab->elem_size);
+                memcpy(da_get_ptr(ab, ab->size), da_get_ptr(a, j), ab->elem_size);
                 ab->size++;
             }
             
             for (int k = 0; k < b->size; k++) {
-                memcpy(da_get(ab, ab->size), da_get(b, k), ab->elem_size);
+                memcpy(da_get_ptr(ab, ab->size), da_get_ptr(b, k), ab->elem_size);
                 ab->size++;
             }
 
@@ -156,7 +182,7 @@ DynamicArray* da_concat(DynamicArray* a, DynamicArray* b) {
     return NULL;
 }
 
-DynamicArray* da_map(DynamicArray* da, void (*f)(const void* src, void* dest)) { // src - указатель на исходный элемент, dest - указатель на место в новом массиве
+DynamicArray* da_map(DynamicArray* da, void (*f)(DynamicArray* da, const void* src, void* dest)) { // src - указатель на исходный элемент, dest - указатель на место в новом массиве
     DynamicArray* map_da = (DynamicArray*)malloc(sizeof(DynamicArray));
 
     if (map_da == NULL) {
@@ -176,19 +202,19 @@ DynamicArray* da_map(DynamicArray* da, void (*f)(const void* src, void* dest)) {
     }
 
     for (int i = 0; i < map_da->capacity; i++) {
-        f(da_get(da, i), da_get(map_da, i)); // В новый массив записывается результат применения функции к элементу в исходном массиве
+        f(da, da_get_ptr(da, i), da_get_ptr(map_da, i)); // В новый массив записывается результат применения функции к элементу в исходном массиве
         map_da->size++;
     }
 
     return map_da;
 }
 
-DynamicArray* da_where(DynamicArray* da, int (*predicate)(const void* elem)) {
+DynamicArray* da_where(DynamicArray* da, int (*predicate)(DynamicArray* da, const void* elem)) {
     DynamicArray* where_da = da_create(da->fieldinfo);
 
     for (int i = 0; i < da->size; i++) {
-        if (predicate(da_get(da, i)) == 1) {
-            da_append(where_da, da_get(da, i));
+        if (predicate(da, da_get_ptr(da, i)) == 1) {
+            da_append(where_da, da_get_ptr(da, i));
         }
     }
 
@@ -199,12 +225,8 @@ void da_sort(DynamicArray* da) {
     qsort(da->data, da->size, da->elem_size, da->fieldinfo->compare);
 }
 
-int is_positive(const void* elem) {
-    return *(double*)elem > 0;
-}
-
-void square_double(const void* src, void* dest) {
-    *(double*)dest = *(double*)src * *(double*)src;
+int da_is_positive(DynamicArray* da, const void* elem) {
+    da->fieldinfo->is_positive(elem);
 }
 
 void test_append() {
@@ -289,7 +311,9 @@ void test_where() {
     FieldInfo double_info = {
       .elem_size = sizeof(double),
       .compare = compare_double,
-      .print = print_double
+      .print = print_double,
+      .is_positive = is_positive_double,
+      .square = square_double
     };
 
     DynamicArray* da = da_create(&double_info);
@@ -303,7 +327,7 @@ void test_where() {
     }
     da_append(da, &val1);
 
-    DynamicArray* where_da = da_where(da, is_positive);
+    DynamicArray* where_da = da_where(da, da_is_positive);
 
     for (int i = 0; i < where_da->size; i++) {
         assert(*(double*)da_get(where_da, i) > 0);
@@ -318,73 +342,282 @@ void test_where() {
 }
 
 
-int main() {
+void menu() {
+    DynamicArray* da = NULL;
+    int main_choice;
 
     FieldInfo int_info = {
-        .elem_size = sizeof(int),
-        .compare = compare_int,
-        .print = print_int
-    };
+                    .elem_size = sizeof(int),
+                    .compare = compare_int,
+                    .print = print_int,
+                    .square = square_int,
+                    .is_positive = is_positive_int
+                };
 
     FieldInfo double_info = {
-        .elem_size = sizeof(double),
-        .compare = compare_double,
-        .print = print_double
-    };
+                    .elem_size = sizeof(double),
+                    .compare = compare_double,
+                    .print = print_double,
+                    .square = square_double,
+                    .is_positive = is_positive_double
+                };
 
-    DynamicArray* a = da_create(&double_info);
-    DynamicArray* b = da_create(&double_info);
+    while (1) {
+        printf("\n=== Dynamic array ===\n");
+        printf("1. Create array\n");
+        printf("2. Add element\n");
+        printf("3. Print array\n");
+        printf("4. Sort array\n");
+        printf("5. 'Map' array\n");
+        printf("6. 'Where' array\n");
+        printf("7. Concatenation of two arrays\n");
+        printf("8. Run tests\n");
+        printf("0. Exit\n");
+        printf("Choice: ");
+        scanf("%d", &main_choice);
 
-    int n = 5;
-    
-    double c = -5.0;
-    // printf("Сколько чисел хотите ввести? ");
-    // scanf("%d", &n);
+        switch (main_choice)
+        {
+        case 1: // Create array
+            int create_choice;
+            printf("\nWhat types of numbers?\n");
+            printf("1. Integers\n");
+            printf("2. Doubles\n");
+            printf("Choice: ");
+            scanf("%d", &create_choice);
+            
+            switch (create_choice)
+            {
+            case 1: // Int array
+                da = da_create(&int_info);
+                printf("Succesfull create array for integers!\n");
+                break;
 
-    for (int i = 0; i < n; i++) {
-        double val_1 = i + n;
-        double val_2 = i + 2 * n;
-        // scanf("%lf", &value);
-        da_append(a, &val_1);
-        da_append(b, &val_2);
+            case 2: // Double array
+                da = da_create(&double_info);
+                printf("Succesfull create array for doubles!\n");
+                break;
+
+            default:
+                break;
+            }
+
+            break;
+
+        case 2: // Append element
+            printf("Enter a number: ");
+
+            if (da->fieldinfo == &int_info) {
+                int i_num;
+                
+                scanf("%d", &i_num);
+
+                da_append(da, &i_num);
+                printf("Number %d completely added\n", i_num);
+            } else if (da->fieldinfo == &double_info) {
+                double d_num;
+                
+                scanf("%lf", &d_num);
+
+                da_append(da, &d_num);
+                printf("Number %lf completely added\n", d_num);
+            }
+
+            break;
+        
+        case 3: // Print array
+            if (da == NULL) {
+                printf("Array is empty\n");
+                break;
+            }
+
+            printf("Array: ");
+            da_print(da);
+            printf("\n");
+
+            break;
+         
+        case 4: // Sort array
+            if (da == NULL) {
+                printf("Array is empty\n");
+                break;
+            }
+
+            printf("Source array: ");
+            da_print(da);
+            printf("\n");
+
+            da_sort(da);
+            printf("Sorted array: ");
+            da_print(da);
+            printf("\n");
+
+            break;
+        
+        case 5: // Apply 'map' to the array
+            if (da == NULL) {
+                printf("Array is empty");
+                break;
+            }
+            
+            printf("Avaivable functions for 'map':\n");
+            printf("1. Square\n");
+            printf("Choice: ");
+
+            int map_choice;
+            scanf("%d", &map_choice);
+
+            switch (map_choice)
+            {
+            case 1: // Apply square
+                printf("Source array: ");
+                da_print(da);
+                printf("\n");
+
+                DynamicArray* map_da = da_map(da, da_square);
+                printf("Mapped array: ");
+                da_print(map_da);
+                printf("\n");
+
+                da_free(map_da);
+                
+                break;
+            
+            default:
+                break;
+            }
+        
+            break;
+        
+        case 6: // where
+            if (da == NULL) {
+                printf("Array is empty");
+                break;
+            }
+            
+            printf("Avaivable predicates:\n");
+            printf("1. 'Is positive'\n");
+            printf("Choice: ");
+
+            int where_choice;
+
+            scanf("%d", &where_choice);
+
+            switch (where_choice)
+            {
+            case 1: // Use predicate 'Is positive'
+                printf("Source array: ");
+                da_print(da);
+                printf("\n");
+
+                DynamicArray* where_da = da_where(da, da_is_positive);
+                printf("Array after using predicate 'Is positive': ");
+                da_print(where_da);
+                printf("\n");
+
+                da_free(where_da);
+
+                break;
+            
+            default:
+                break;
+            }
+
+            break;
+
+
+        case 8:
+            
+            test_where();
+
+            break;
+        case 0: // Exit programm 
+            if (da != NULL) {
+                da_free(da);
+            }
+
+            return;
+
+        default:
+            break;
+        }
     }
-    da_append(a, &c);
+}
 
-    da_print(a);
-    printf("\n");
-    da_print(b);
-    printf("\n");
 
-    DynamicArray* da = da_concat(a, b);
-    da_print(da);
-    printf("\n");
+int main() {
 
-    DynamicArray* map_da = da_map(da, square_double);
-    da_print(map_da);
-    printf("\n");
-
-    DynamicArray* where_da = da_where(da, is_positive);
-    da_print(where_da);
-    printf("\n");
-
-    da_sort(da);
-    da_print(da);
-    printf("\n");
-    // for (int i = 0; i < da->size; i++) {
-    //     printf("%lf ", *(double*)da_get(da, i)); // Вычисляем адрес через char, потом приводим к нужному типу указателя и разыменовываем
-    // }
-    da_free(a);
-    da_free(b);
-    da_free(da);
-    da_free(map_da);
-    da_free(where_da);
-
-    test_append();
-    test_concat();
-    test_where();
+    menu();
+ 
 
     return 0;
 }
+
+   // FieldInfo int_info = {
+    //     .elem_size = sizeof(int),
+    //     .compare = compare_int,
+    //     .print = print_int
+    // };
+
+    // FieldInfo double_info = {
+    //     .elem_size = sizeof(double),
+    //     .compare = compare_double,
+    //     .print = print_double
+    // };
+
+    // DynamicArray* a = da_create(&double_info);
+    // DynamicArray* b = da_create(&double_info);
+
+    // int n = 5;
+    
+    // double c = -5.0;
+    // // printf("Сколько чисел хотите ввести? ");
+    // // scanf("%d", &n);
+
+    // for (int i = 0; i < n; i++) {
+    //     double val_1 = i + n;
+    //     double val_2 = i + 2 * n;
+    //     // scanf("%lf", &value);
+    //     da_append(a, &val_1);
+    //     da_append(b, &val_2);
+    // }
+    // da_append(a, &c);
+
+    // da_print(a);
+    // printf("\n");
+    // da_print(b);
+    // printf("\n");
+
+    // DynamicArray* da = da_concat(a, b);
+    // da_print(da);
+    // printf("\n");
+
+    // DynamicArray* map_da = da_map(da, square_double);
+    // da_print(map_da);
+    // printf("\n");
+
+    // DynamicArray* where_da = da_where(da, is_positive);
+    // da_print(where_da);
+    // printf("\n");
+
+    // da_sort(da);
+    // da_print(da);
+    // printf("\n");
+    // // for (int i = 0; i < da->size; i++) {
+    // //     printf("%lf ", *(double*)da_get(da, i)); // Вычисляем адрес через char, потом приводим к нужному типу указателя и разыменовываем
+    // // }
+    // da_free(a);
+    // da_free(b);
+    // da_free(da);
+    // da_free(map_da);
+    // da_free(where_da);
+
+    // test_append();
+    // test_concat();
+    // test_where();
+    // =========
+
+
 
     // int i_arr[4] = {1, 2, 3, 4};
     // double d_arr[5] = {1.2, 2.0, 3.0, 4.0, 5.0};
