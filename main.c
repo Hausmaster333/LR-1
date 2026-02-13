@@ -175,9 +175,9 @@ void da_print(DynamicArray* da) {
     }
 }
 
-void da_square(DynamicArray* da, const void* dest, void* src) {
-    da->fieldinfo->square(dest, src);
-}
+// void da_square(DynamicArray* da, const void* dest, void* src) {
+//     da->fieldinfo->square(dest, src);
+// }
 
 DynamicArray* da_concat(DynamicArray* a, DynamicArray* b) {
 
@@ -222,7 +222,7 @@ DynamicArray* da_concat(DynamicArray* a, DynamicArray* b) {
     return NULL;
 }
 
-DynamicArray* da_map(DynamicArray* da, void (*f)(DynamicArray* da, const void* src, void* dest)) { // src - указатель на исходный элемент, dest - указатель на место в новом массиве
+DynamicArray* da_map(DynamicArray* da, void (*f)(const void* src, void* dest)) { // src - указатель на исходный элемент, dest - указатель на место в новом массиве
     DynamicArray* map_da = (DynamicArray*)malloc(sizeof(DynamicArray));
 
     if (map_da == NULL) {
@@ -242,18 +242,18 @@ DynamicArray* da_map(DynamicArray* da, void (*f)(DynamicArray* da, const void* s
     }
 
     for (int i = 0; i < map_da->capacity; i++) {
-        f(da, da_get_ptr(da, i), da_get_ptr(map_da, i)); // В новый массив записывается результат применения функции к элементу в исходном массиве
+        f(da_get_ptr(da, i), da_get_ptr(map_da, i)); // В новый массив записывается результат применения функции к элементу в исходном массиве
         map_da->size++;
     }
 
     return map_da;
 }
 
-DynamicArray* da_where(DynamicArray* da, int (*predicate)(DynamicArray* da, const void* elem)) {
+DynamicArray* da_where(DynamicArray* da, int (*predicate)(const void* elem)) {
     DynamicArray* where_da = da_create(da->fieldinfo);
 
     for (int i = 0; i < da->size; i++) {
-        if (predicate(da, da_get_ptr(da, i)) == 1) {
+        if (predicate(da_get_ptr(da, i)) == 1) {
             da_append(where_da, da_get_ptr(da, i));
         }
     }
@@ -265,9 +265,9 @@ void da_sort(DynamicArray* da) {
     qsort(da->data, da->size, da->elem_size, da->fieldinfo->compare);
 }
 
-int da_is_positive(DynamicArray* da, const void* elem) {
-    da->fieldinfo->is_positive(elem);
-}
+// int da_is_positive(DynamicArray* da, const void* elem) {
+//     da->fieldinfo->is_positive(elem);
+// }
 
 void test_append() {
 
@@ -367,7 +367,7 @@ void test_where() {
     }
     da_append(da, &val1);
 
-    DynamicArray* where_da = da_where(da, da_is_positive);
+    DynamicArray* where_da = da_where(da, da->fieldinfo->is_positive);
 
     for (int i = 0; i < where_da->size; i++) {
         assert(*(double*)da_get(where_da, i) > 0);
@@ -459,6 +459,7 @@ void menu() {
                 break;
 
             default:
+                printf("Error: Incorrect option, try again\n");
                 break;
             }
 
@@ -484,8 +485,13 @@ void menu() {
             printf("Choice: ");
 
             if (!read_one(INPUT_INT, &arr_app_choice)) {
-                printf("Invalid input, try again\n");
+                printf("Error: Invalid input, try again\n");
                 continue;
+            }
+
+            if (arr_app_choice < 1 || arr_app_choice > array_cnt) {
+                printf("Error: Invalid array number\n");
+                break;
             }
 
             printf("Enter a number: ");
@@ -494,7 +500,7 @@ void menu() {
                 int i_num;
                 
                 if (!read_one(INPUT_INT, &i_num)) {
-                    printf("Invalid input, try again\n");
+                    printf("Error: Invalid input, try again\n");
                     continue;
                 }
 
@@ -506,7 +512,7 @@ void menu() {
                 double d_num;
                 
                 if (!read_one(INPUT_DOUBLE, &d_num)) {
-                    printf("Invalid input, try again\n");
+                    printf("Error: Invalid input, try again\n");
                     continue;
                 }
 
@@ -563,8 +569,13 @@ void menu() {
             printf("Choice: ");
 
             if (!read_one(INPUT_INT, &arr_sort_choice)) {
-                printf("Invalid input, try again\n");
+                printf("Error: Invalid input, try again\n");
                 continue;
+            }
+
+            if (arr_sort_choice < 1 || arr_sort_choice > array_cnt) {
+                printf("Error: Invalid array number\n");
+                break;
             }
 
             if (is_size_zero(arrays[arr_sort_choice - 1])) {
@@ -606,8 +617,13 @@ void menu() {
             printf("Choice: ");
 
             if (!read_one(INPUT_INT, &arr_map_choice)) {
-                printf("Invalid input, try again\n");
+                printf("Error: Invalid input, try again\n");
                 continue;
+            }
+
+            if (arr_map_choice < 1 || arr_map_choice > array_cnt) {
+                printf("Error: Invalid array number\n");
+                break;
             }
 
             if (is_size_zero(arrays[arr_map_choice - 1])) {
@@ -622,9 +638,14 @@ void menu() {
             int map_choice;
 
             if (!read_one(INPUT_INT, &map_choice)) {
-                printf("Invalid input, try again\n");
+                printf("Error: Invalid input, try again\n");
                 continue;
             }
+
+            if (map_choice != 1) {
+                printf("Error: Invalid option number\n");
+                break;
+            } 
 
             switch (map_choice)
             {
@@ -633,7 +654,7 @@ void menu() {
                 da_print(arrays[arr_map_choice - 1]);
                 printf("\n");
 
-                DynamicArray* map_da = da_map(arrays[arr_map_choice - 1], da_square);
+                DynamicArray* map_da = da_map(arrays[arr_map_choice - 1], arrays[arr_map_choice - 1]->fieldinfo->square);
                 printf("Mapped array: ");
                 da_print(map_da);
                 printf("\n");
@@ -670,9 +691,15 @@ void menu() {
             }
 
             printf("Choice: ");
+
             if (!read_one(INPUT_INT, &arr_where_choice)) {
-                printf("Invalid input, try again\n");
+                printf("Error: Invalid input, try again\n");
                 continue;
+            }
+
+            if (arr_where_choice < 1 || arr_where_choice > array_cnt) {
+                printf("Error: Invalid array number\n");
+                break;
             }
 
             if (is_size_zero(arrays[arr_where_choice - 1])) {
@@ -687,9 +714,14 @@ void menu() {
             int where_choice;
 
             if (!read_one(INPUT_INT, &where_choice)) {
-                printf("Invalid input, try again\n");
+                printf("Error: Invalid input, try again\n");
                 continue;
             }
+
+            if (where_choice != 1) {
+                printf("Error: Invalid option number\n");
+                break;
+            }    
 
             switch (where_choice)
             {
@@ -698,7 +730,7 @@ void menu() {
                 da_print(arrays[arr_where_choice - 1]);
                 printf("\n");
 
-                DynamicArray* where_da = da_where(arrays[arr_where_choice - 1], da_is_positive);
+                DynamicArray* where_da = da_where(arrays[arr_where_choice - 1], arrays[arr_where_choice - 1]->fieldinfo->is_positive);
                 printf("Array after using predicate 'Is positive': ");
                 da_print(where_da);
                 printf("\n");
@@ -733,10 +765,15 @@ void menu() {
 
             printf("Number of first array: ");
             if (!read_one(INPUT_INT, &arr_concat_choice_1)) {
-                printf("Invalid input, try again\n");
+                printf("Error: Invalid input, try again\n");
                 continue;
             }
             printf("\n");
+
+            if (arr_concat_choice_1 < 1 || arr_concat_choice_1 > array_cnt) {
+                printf("Error: Invalid array number\n");
+                break;
+            }
 
             if (is_size_zero(arrays[arr_concat_choice_1 - 1])) {
                 printf("Error: Array is empty, add some elements\n");
@@ -745,10 +782,15 @@ void menu() {
             
             printf("Number of second array: ");
             if (!read_one(INPUT_INT, &arr_concat_choice_2)) {
-                printf("Invalid input, try again\n");
+                printf("Error: Invalid input, try again\n");
                 continue;
             }
             printf("\n");
+
+            if (arr_concat_choice_2 < 1 || arr_concat_choice_2 > array_cnt) {
+                printf("Error: Invalid array number\n");
+                break;
+            }
 
             if (is_size_zero(arrays[arr_concat_choice_2 - 1])) {
                 printf("Error: Array is empty, add some elements\n");
