@@ -4,3 +4,5 @@ Block1.c
 main.exe
 program.exe
 program
+*.o
+*.exe
