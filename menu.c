@@ -110,8 +110,6 @@ void menu() {
                     continue;
                 }
 
-                // РЕАЛИЗОВАТЬ ПРОВЕРКУ НА НЕКОРРЕКТНЫЙ ВВОД
-
                 da_append(arrays[arr_app_choice - 1], &i_num);
                 printf("Number %d completely added\n", i_num);
             } else if (arrays[arr_app_choice - 1]->fieldinfo == double_info) {
@@ -121,8 +119,6 @@ void menu() {
                     printf("Error: Invalid input, try again\n");
                     continue;
                 }
-
-                // РЕАЛИЗОВАТЬ ПРОВЕРКУ НА НЕКОРРЕКТНЫЙ ВВОД
 
                 da_append(arrays[arr_app_choice - 1], &d_num);
                 printf("Number %lf completely added\n", d_num);

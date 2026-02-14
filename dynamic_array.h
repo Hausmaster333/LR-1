@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "field_info.h"
 
-typedef struct {
+typedef struct DynamicArray {
     FieldInfo* fieldinfo;
     void* data;
     size_t size;

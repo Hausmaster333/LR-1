@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-typedef struct {
+typedef struct FieldInfo {
     size_t elem_size;
     void (*print)(const void* elem);
     int (*compare)(const void* a, const void* b);

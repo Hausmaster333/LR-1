@@ -1,7 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-typedef enum {
+typedef enum InputType {
     INPUT_INT,
     INPUT_DOUBLE
 } InputType;
