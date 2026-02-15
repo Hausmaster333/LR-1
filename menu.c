@@ -30,27 +30,22 @@ void menu() {
         printf("Choice: ");
 
         if (!read_one(INPUT_INT, &main_choice)) {
-            printf("Invalid input, try again\n");
+            printf("ERROR: Invalid input, try again\n");
             continue;
         }
-
-        // scanf("%d", &main_choice);
 
         switch (main_choice)
         {
         case 1: // Create array
             int create_choice;
             printf("\nWhat types of numbers?\n");
-            printf("1. Integers\n");
-            printf("2. Doubles\n");
-            printf("Choice: ");
+            printf("1. Integers\n2. Doubles\nChoice: ");
+
 
             if (!read_one(INPUT_INT, &create_choice)) {
-                printf("Invalid input, try again\n");
+                printf("ERROR: Invalid input, try again\n");
                 continue;
             }
-
-            // scanf("%d", &create_choice);
             
             switch (create_choice)
             {
@@ -65,7 +60,7 @@ void menu() {
                 break;
 
             default:
-                printf("Error: Incorrect option, try again\n");
+                printf("ERROR: Incorrect option, try again\n");
                 break;
             }
 
@@ -74,8 +69,7 @@ void menu() {
         case 2: // Append element
             
             if (array_cnt == 0) {
-                printf("You have 0 arrays");
-                printf("\n");
+                printf("ERROR: You have 0 arrays\n");
                 break;
             }
 
@@ -91,12 +85,12 @@ void menu() {
             printf("Choice: ");
 
             if (!read_one(INPUT_INT, &arr_app_choice)) {
-                printf("Error: Invalid input, try again\n");
+                printf("ERROR: Invalid input, try again\n");
                 continue;
             }
 
             if (arr_app_choice < 1 || arr_app_choice > array_cnt) {
-                printf("Error: Invalid array number\n");
+                printf("ERROR: Invalid array number\n");
                 break;
             }
 
@@ -106,7 +100,7 @@ void menu() {
                 int i_num;
                 
                 if (!read_one(INPUT_INT, &i_num)) {
-                    printf("Error: Invalid input, try again\n");
+                    printf("ERROR: Invalid input, try again\n");
                     continue;
                 }
 
@@ -116,7 +110,7 @@ void menu() {
                 double d_num;
                 
                 if (!read_one(INPUT_DOUBLE, &d_num)) {
-                    printf("Error: Invalid input, try again\n");
+                    printf("ERROR: Invalid input, try again\n");
                     continue;
                 }
 
@@ -127,13 +121,9 @@ void menu() {
             break;
         
         case 3: // Print array
-            // if (da == NULL) {
-            //     printf("Array is empty\n");
-            //     break;
-            // }
+
             if (array_cnt == 0) {
-                printf("You have 0 arrays");
-                printf("\n");
+                printf("ERROR: You have 0 arrays\n");
                 break;
             }
 
@@ -148,14 +138,9 @@ void menu() {
             break;
          
         case 4: // Sort array
-            // if (da == NULL) {
-            //     printf("Array is empty\n");
-            //     break;
-            // }
 
             if (array_cnt == 0) {
-                printf("You have 0 arrays");
-                printf("\n");
+                printf("ERROR: You have 0 arrays\n");
                 break;
             }
 
@@ -171,17 +156,17 @@ void menu() {
             printf("Choice: ");
 
             if (!read_one(INPUT_INT, &arr_sort_choice)) {
-                printf("Error: Invalid input, try again\n");
+                printf("ERROR: Invalid input, try again\n");
                 continue;
             }
 
             if (arr_sort_choice < 1 || arr_sort_choice > array_cnt) {
-                printf("Error: Invalid array number\n");
+                printf("ERROR: Invalid array number\n");
                 break;
             }
 
             if (arrays[arr_sort_choice - 1]->size == 0) {
-                printf("Error: Array is empty, add some elements\n");
+                printf("ERROR: Array is empty, add some elements\n");
                 break;
             }
 
@@ -197,13 +182,9 @@ void menu() {
             break;
         
         case 5: // Apply 'map' to the array
-            // if (da == NULL) {
-            //     printf("Array is empty");
-            //     break;
-            // }
+
             if (array_cnt == 0) {
-                printf("You have 0 arrays");
-                printf("\n");
+                printf("You have 0 arrays\n");
                 break;
             }
 
@@ -219,67 +200,70 @@ void menu() {
             printf("Choice: ");
 
             if (!read_one(INPUT_INT, &arr_map_choice)) {
-                printf("Error: Invalid input, try again\n");
+                printf("ERROR: Invalid input, try again\n");
                 continue;
             }
 
             if (arr_map_choice < 1 || arr_map_choice > array_cnt) {
-                printf("Error: Invalid array number\n");
+                printf("ERROR: Invalid array number\n");
                 break;
             }
 
             if (arrays[arr_map_choice - 1]->size == 0) {
-                printf("Error: Array is empty, add some elements\n");
+                printf("ERROR: Array is empty, add some elements\n");
                 break;
             }
 
             printf("Avaivable functions for 'map':\n");
-            printf("1. Square\n");
-            printf("Choice: ");
+            printf("1. Square\n2. Reverse\nChoice: ");
 
             int map_choice;
 
             if (!read_one(INPUT_INT, &map_choice)) {
-                printf("Error: Invalid input, try again\n");
+                printf("ERROR: Invalid input, try again\n");
                 continue;
             }
 
-            if (map_choice != 1) {
-                printf("Error: Invalid option number\n");
-                break;
-            } 
+
+            printf("Source array: ");
+            da_print(arrays[arr_map_choice - 1]);
+            printf("\n");
 
             switch (map_choice)
             {
             case 1: // Apply square
-                printf("Source array: ");
-                da_print(arrays[arr_map_choice - 1]);
-                printf("\n");
 
-                DynamicArray* map_da = da_map(arrays[arr_map_choice - 1], arrays[arr_map_choice - 1]->fieldinfo->square);
+                DynamicArray* map_sqrt_da = da_map(arrays[arr_map_choice - 1], arrays[arr_map_choice - 1]->fieldinfo->square);
                 printf("Mapped array: ");
-                da_print(map_da);
+                da_print(map_sqrt_da);
                 printf("\n");
 
-                da_free(map_da);
+                da_free(map_sqrt_da);
                 
                 break;
             
+            case 2: // Apply reverse
+
+                DynamicArray* map_rev_da = da_map(arrays[arr_map_choice - 1], arrays[arr_map_choice - 1]->fieldinfo->reverse);
+                printf("Mapped array: ");
+                da_print(map_rev_da);
+                printf("\n");
+
+                da_free(map_rev_da);
+
+                break;
+
             default:
+                printf("ERROR: Invalid option number\n");
                 break;
             }
         
             break;
         
         case 6: // where
-            // if (da == NULL) {
-            //     printf("Array is empty");
-            //     break;
-            // }
             
             if (array_cnt == 0) {
-                printf("You have 0 arrays");
-                printf("\n");
+                printf("You have 0 arrays\n");
                 break;
             }
 
@@ -295,53 +279,59 @@ void menu() {
             printf("Choice: ");
 
             if (!read_one(INPUT_INT, &arr_where_choice)) {
-                printf("Error: Invalid input, try again\n");
+                printf("ERROR: Invalid input, try again\n");
                 continue;
             }
 
             if (arr_where_choice < 1 || arr_where_choice > array_cnt) {
-                printf("Error: Invalid array number\n");
+                printf("ERROR: Invalid array number\n");
                 break;
             }
 
             if (arrays[arr_where_choice - 1]->size == 0) {
-                printf("Error: Array is empty, add some elements\n");
+                printf("ERROR: Array is empty, add some elements\n");
                 break;
             }
 
             printf("Avaivable predicates:\n");
-            printf("1. 'Is positive'\n");
-            printf("Choice: ");
+            printf("1. 'Is positive'\n2. 'Is negative'\nChoice: ");
 
             int where_choice;
 
             if (!read_one(INPUT_INT, &where_choice)) {
-                printf("Error: Invalid input, try again\n");
+                printf("ERROR: Invalid input, try again\n");
                 continue;
             }
 
-            if (where_choice != 1) {
-                printf("Error: Invalid option number\n");
-                break;
-            }    
+            printf("Source array: ");
+            da_print(arrays[arr_where_choice - 1]);
+            printf("\n");
 
             switch (where_choice)
             {
             case 1: // Use predicate 'Is positive'
-                printf("Source array: ");
-                da_print(arrays[arr_where_choice - 1]);
-                printf("\n");
 
-                DynamicArray* where_da = da_where(arrays[arr_where_choice - 1], arrays[arr_where_choice - 1]->fieldinfo->is_positive);
+                DynamicArray* where_pos_da = da_where(arrays[arr_where_choice - 1], arrays[arr_where_choice - 1]->fieldinfo->is_positive);
                 printf("Array after using predicate 'Is positive': ");
-                da_print(where_da);
+                da_print(where_pos_da);
                 printf("\n");
 
-                da_free(where_da);
+                da_free(where_pos_da);
 
                 break;
             
+            case 2: // Use predicate 'Is negative'
+                DynamicArray* where_neg_da = da_where(arrays[arr_where_choice - 1], arrays[arr_where_choice - 1]->fieldinfo->is_negative);
+                printf("Array after using predicate 'Is negative': ");
+                da_print(where_neg_da);
+                printf("\n");
+
+                da_free(where_neg_da);
+
+                break;
+
             default:
+                printf("ERROR: Invalid option number\n");
                 break;
             }
 
@@ -350,8 +340,7 @@ void menu() {
         case 7: // Concatenation
 
             if (array_cnt == 0) {
-                printf("You have 0 arrays");
-                printf("\n");
+                printf("ERROR: You have 0 arrays\n");
                 break;
             }
 
@@ -367,45 +356,49 @@ void menu() {
 
             printf("Number of first array: ");
             if (!read_one(INPUT_INT, &arr_concat_choice_1)) {
-                printf("Error: Invalid input, try again\n");
+                printf("ERROR: Invalid input, try again\n");
                 continue;
             }
             printf("\n");
 
             if (arr_concat_choice_1 < 1 || arr_concat_choice_1 > array_cnt) {
-                printf("Error: Invalid array number\n");
+                printf("ERROR: Invalid array number\n");
                 break;
             }
 
-            if (arrays[arr_concat_choice_1 - 1]->size == 0) {
-                printf("Error: Array is empty, add some elements\n");
+            int arr_concat_index_1 = arr_concat_choice_1 - 1;
+
+            if (arrays[arr_concat_index_1]->size == 0) {
+                printf("ERROR: Array is empty, add some elements\n");
                 break;
             }
             
             printf("Number of second array: ");
             if (!read_one(INPUT_INT, &arr_concat_choice_2)) {
-                printf("Error: Invalid input, try again\n");
+                printf("ERROR: Invalid input, try again\n");
                 continue;
             }
             printf("\n");
 
             if (arr_concat_choice_2 < 1 || arr_concat_choice_2 > array_cnt) {
-                printf("Error: Invalid array number\n");
+                printf("ERROR: Invalid array number\n");
                 break;
             }
 
-            if (arrays[arr_concat_choice_2 - 1]->size == 0) {
-                printf("Error: Array is empty, add some elements\n");
+            int arr_concat_index_2 = arr_concat_choice_2 - 1;
+
+            if (arrays[arr_concat_index_2]->size == 0) {
+                printf("ERROR: Array is empty, add some elements\n");
                 break;
             }
 
             printf("Source arrays: ");
-            da_print(arrays[arr_concat_choice_1 - 1]);
+            da_print(arrays[arr_concat_index_1]);
             printf("| ");
-            da_print(arrays[arr_concat_choice_2 - 1]);
+            da_print(arrays[arr_concat_index_2]);
             printf("\n");
 
-            DynamicArray* concat_da = da_concat(arrays[arr_concat_choice_1 - 1], arrays[arr_concat_choice_2 - 1]);
+            DynamicArray* concat_da = da_concat(arrays[arr_concat_index_1], arrays[arr_concat_index_2]);
             if (concat_da != NULL) {
                 printf("Concatenated array: ");
                 da_print(concat_da);
@@ -416,9 +409,42 @@ void menu() {
 
             break;
 
-        case 8:
+        case 8: // Run tests
+            int tests_choice;
+            int in_tests = 1;
+            while (in_tests) {
 
-            run_tests();
+                printf("\n==== Tests menu ====\n");
+                printf("1. Automatic tests\n");
+                printf("2. Manual tests\n");
+                printf("0. Exit\n");
+                printf("Choice: ");
+
+                if (!read_one(INPUT_INT, &tests_choice)) {
+                    printf("ERROR: Invalid choice, try again\n");
+                    continue;
+                }
+
+                switch (tests_choice)
+                {
+                case 1: // Run auto tests
+                    run_auto_tests();
+                    break;
+                
+                case 2: // Run manual tests
+                    run_manual_tests(arrays, array_cnt);
+                    break;
+                
+                case 0: // Exit
+                    in_tests = 0;
+                    break;
+
+                default:
+                    printf("ERROR: Invalid option number\n");
+                    break;
+                }
+
+            }
 
             break;
 
@@ -432,7 +458,7 @@ void menu() {
             return;
 
         default:
-            break;
+            printf("ERROR: Invalid option number\n");
         }
     }
 }

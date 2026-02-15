@@ -1,9 +1,9 @@
 #ifndef DYNAMIC_ARRAY_H
 #define DYNAMIC_ARRAY_H
 
-#include <stdio.h>
+#include <stddef.h>
 #include "field_info.h"
-
+ 
 typedef struct DynamicArray {
     FieldInfo* fieldinfo;
     void* data;
@@ -28,6 +28,7 @@ DynamicArray* da_map(DynamicArray* da, void (*f)(const void* src, void* dest));
 DynamicArray* da_where(DynamicArray* da, int (*predicate)(const void* elem));
 
 void da_sort(DynamicArray* da);
+
 
 
 #endif

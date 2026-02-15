@@ -21,7 +21,7 @@ dynamic_array.o: dynamic_array.c dynamic_array.h
 utils.o: utils.c utils.h
 	gcc -c utils.c
 
-tests.o: tests.c tests.h
+tests.o: tests.c tests.h dynamic_array.h int_field_info.h double_field_info.h utils.h
 	gcc -c tests.c
 
 clean:
