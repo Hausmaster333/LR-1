@@ -22,8 +22,16 @@ void square_double(const void* src, void* dest) {
     *(double*)dest = *(double*)src * *(double*)src;
 }
 
+void reverse_double(const void* src, void* dest) {
+    *(double*)dest = -(*(double*)src); 
+}
+
 int is_positive_double(const void* elem) {
     return *(double*)elem > 0;
+}
+
+int is_negative_double(const void* elem) {
+    return *(double*)elem < 0;
 }
 
 static FieldInfo* DOUBLE_FIELD_INFO = NULL;
@@ -37,9 +45,10 @@ FieldInfo* get_double_field_info() {
         DOUBLE_FIELD_INFO->elem_size = sizeof(double);
         DOUBLE_FIELD_INFO->compare = compare_double;
         DOUBLE_FIELD_INFO->is_positive = is_positive_double;
+        DOUBLE_FIELD_INFO->is_negative = is_negative_double;
         DOUBLE_FIELD_INFO->print = print_double;
         DOUBLE_FIELD_INFO->square = square_double;
-
+        DOUBLE_FIELD_INFO->reverse = reverse_double;
     }
 
     return DOUBLE_FIELD_INFO;

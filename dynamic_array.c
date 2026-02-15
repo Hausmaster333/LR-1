@@ -39,7 +39,7 @@ void* da_get(DynamicArray* da, size_t index) { // Возвращает указ�
 }
 
 static void* da_get_ptr(DynamicArray* da, size_t index) {
-    return (char*)da->data + index * da->fieldinfo->elem_size;
+    return (char*)da->data + index * da->fieldinfo->elem_size; // (0 элемент + сдвиг по байтам, который текущий размер + размер эл. в байтах)
 }
 
 void da_append(DynamicArray* da, void* elem) {
@@ -61,7 +61,7 @@ void da_append(DynamicArray* da, void* elem) {
     }
     
     memcpy(da_get_ptr(da, da->size), elem, da->fieldinfo->elem_size); // куда, откуда, размер. Куда определяем через приведение к байтам
-                                                                            // (0 элемент + сдвиг по байтам, который текущий размер + размер эл. в байтах)
+                                                                            
     da->size++;
 }
 
@@ -157,7 +157,46 @@ DynamicArray* da_where(DynamicArray* da, int (*predicate)(const void* elem)) {
     return where_da;
 }
 
-void da_sort(DynamicArray* da) { // Сортировка, написать самому без встроенной функции
-    qsort(da->data, da->size, da->fieldinfo->elem_size, da->fieldinfo->compare);
+static void da_elements_swap(DynamicArray* da, size_t first_elem, size_t second_elem) {
+
+    void* ptr_first_elem = da_get(da, first_elem);
+    void* ptr_second_elem = da_get(da, second_elem);
+
+    size_t size = da->fieldinfo->elem_size;
+// (size_t*)
+    void* tmp_ptr = (size_t*)malloc(size);
+    memcpy(tmp_ptr, ptr_first_elem, size);
+    memcpy(ptr_first_elem, ptr_second_elem, size);
+    memcpy(ptr_second_elem, tmp_ptr, size);
+}
+
+static int da_split(DynamicArray* da, int low, int high) { // Возвращает точку разделения
+    void* pivot = da_get_ptr(da, (low + high) / 2);
+
+    while (low <= high) {
+        while (da->fieldinfo->compare(da_get_ptr(da, low), pivot) < 0) low++;
+        while (da->fieldinfo->compare(da_get_ptr(da, high), pivot) > 0) high--;
+
+        if (low <= high) {
+            da_elements_swap(da, low, high);
+            low++;
+            high--;
+        }
+        
+    }
+    return low;
+}
+
+static void da_quicksort(DynamicArray* da, int low, int high) {
+    if (low < high) {
+        int split = da_split(da, low, high);
+        da_quicksort(da, low, split - 1);
+        da_quicksort(da, split, high);
+    }
+}
+
+void da_sort(DynamicArray* da) {
+    da_quicksort(da, 0, da->size - 1);
+    // qsort(da->data, da->size, da->fieldinfo->elem_size, da->fieldinfo->compare);
 }
 

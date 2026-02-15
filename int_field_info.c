@@ -22,8 +22,16 @@ void square_int(const void* src, void* dest) {
     *(int*)dest = *(int*)src * *(int*)src;
 }
 
+void reverse_int(const void* src, void* dest) {
+    *(int*)dest = -(*(int*)src);
+}
+
 int is_positive_int(const void* elem) {
     return *(int*)elem > 0;
+}
+
+int is_negative_int(const void* elem) {
+    return *(int*)elem < 0;
 }
 
 static FieldInfo* INT_FIELD_INFO = NULL;
@@ -37,8 +45,10 @@ FieldInfo* get_int_field_info() {
         INT_FIELD_INFO->elem_size = sizeof(int);
         INT_FIELD_INFO->compare = compare_int;
         INT_FIELD_INFO->is_positive = is_positive_int;
+        INT_FIELD_INFO->is_negative = is_negative_int;
         INT_FIELD_INFO->print = print_int;
         INT_FIELD_INFO->square = square_int;
+        INT_FIELD_INFO->reverse = reverse_int;
     }
 
     return INT_FIELD_INFO;    
