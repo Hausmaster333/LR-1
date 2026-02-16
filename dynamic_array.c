@@ -171,7 +171,8 @@ static void da_elements_swap(DynamicArray* da, size_t first_elem, size_t second_
 }
 
 static int da_split(DynamicArray* da, int low, int high) { // Возвращает точку разделения
-    void* pivot = da_get_ptr(da, (low + high) / 2);
+    void* pivot = malloc(da->fieldinfo->elem_size);
+    memcpy(pivot, da_get_ptr(da, (low + high) / 2), da->fieldinfo->elem_size);
 
     while (low <= high) {
         while (da->fieldinfo->compare(da_get_ptr(da, low), pivot) < 0) low++;
@@ -184,6 +185,7 @@ static int da_split(DynamicArray* da, int low, int high) { // Возвращае
         }
         
     }
+    free(pivot);
     return low;
 }
 
