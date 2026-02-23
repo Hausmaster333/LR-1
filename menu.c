@@ -224,7 +224,6 @@ void menu() {
                 continue;
             }
 
-
             printf("Source array: ");
             da_print(arrays[arr_map_choice - 1]);
             printf("\n");

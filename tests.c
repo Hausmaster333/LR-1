@@ -8,7 +8,6 @@
 #include "tests.h"
 #include "utils.h"
 
-
 static void test_append() { // ДОДЕЛАТЬ ДЛЯ ИНТОВ
 
     printf("START test_append\n");

@@ -29,6 +29,4 @@ DynamicArray* da_where(DynamicArray* da, int (*predicate)(const void* elem));
 
 void da_sort(DynamicArray* da);
 
-
-
 #endif
