@@ -33,7 +33,7 @@ int read_one(InputType type, void* elem) {
 
         *(double*)elem = val;
         return 1;
-    }   
+    }
 
     return 0;
 }

@@ -72,8 +72,8 @@ void da_print(DynamicArray* da) {
         return;
     }
 
-    for (int i = 0; i < da->size; i++) {
-        da->fieldinfo->print(da_get_ptr(da, i)); // Вызываем функцию по указателю
+    for (int elem_i = 0; elem_i < da->size; elem_i++) {
+        da->fieldinfo->print(da_get_ptr(da, elem_i)); // Вызываем функцию по указателю
     }
 }
 
@@ -98,13 +98,13 @@ DynamicArray* da_concat(DynamicArray* a, DynamicArray* b) {
                 return NULL;
             }
 
-            for (int j = 0; j < a->size; j++) {
-                memcpy(da_get_ptr(ab, ab->size), da_get_ptr(a, j), ab->fieldinfo->elem_size);
+            for (int a_elem_i = 0; a_elem_i < a->size; a_elem_i++) {
+                memcpy(da_get_ptr(ab, ab->size), da_get_ptr(a, a_elem_i), ab->fieldinfo->elem_size);
                 ab->size++;
             }
             
-            for (int k = 0; k < b->size; k++) {
-                memcpy(da_get_ptr(ab, ab->size), da_get_ptr(b, k), ab->fieldinfo->elem_size);
+            for (int b_elem_i = 0; b_elem_i < b->size; b_elem_i++) {
+                memcpy(da_get_ptr(ab, ab->size), da_get_ptr(b, b_elem_i), ab->fieldinfo->elem_size);
                 ab->size++;
             }
 
@@ -137,8 +137,8 @@ DynamicArray* da_map(DynamicArray* da, void (*f)(const void* src, void* dest)) {
         return NULL;
     }
 
-    for (int i = 0; i < map_da->capacity; i++) {
-        f(da_get_ptr(da, i), da_get_ptr(map_da, i)); // В новый массив записывается результат применения функции к элементу в исходном массиве
+    for (int elem_i = 0; elem_i < map_da->capacity; elem_i++) {
+        f(da_get_ptr(da, elem_i), da_get_ptr(map_da, elem_i)); // В новый массив записывается результат применения функции к элементу в исходном массиве
         map_da->size++;
     }
 
@@ -148,9 +148,9 @@ DynamicArray* da_map(DynamicArray* da, void (*f)(const void* src, void* dest)) {
 DynamicArray* da_where(DynamicArray* da, int (*predicate)(const void* elem)) {
     DynamicArray* where_da = da_create(da->fieldinfo);
 
-    for (int i = 0; i < da->size; i++) {
-        if (predicate(da_get_ptr(da, i)) == 1) {
-            da_append(where_da, da_get_ptr(da, i));
+    for (int elem_i = 0; elem_i < da->size; elem_i++) {
+        if (predicate(da_get_ptr(da, elem_i)) == 1) {
+            da_append(where_da, da_get_ptr(da, elem_i));
         }
     }
 
@@ -163,7 +163,6 @@ static void da_elements_swap(DynamicArray* da, size_t first_elem, size_t second_
     void* ptr_second_elem = da_get(da, second_elem);
 
     size_t size = da->fieldinfo->elem_size;
-// (size_t*)
     void* tmp_ptr = (size_t*)malloc(size);
     memcpy(tmp_ptr, ptr_first_elem, size);
     memcpy(ptr_first_elem, ptr_second_elem, size);

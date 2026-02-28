@@ -191,9 +191,9 @@ void menu() {
             int arr_map_choice;
             printf("\nChoice the array, avaivable arrays: \n");
 
-            for (int i = 0; i < array_cnt; i++) {
-                printf("Array %d: ", i + 1);
-                da_print(arrays[i]);
+            for (int arr_num = 0; arr_num < array_cnt; arr_num++) {
+                printf("Array %d: ", arr_num + 1);
+                da_print(arrays[arr_num]);
                 printf("\n");
             }
 
@@ -269,9 +269,9 @@ void menu() {
             int arr_where_choice;
             printf("\nChoice the array, avaivable arrays: \n");
 
-            for (int i = 0; i < array_cnt; i++) {
-                printf("Array %d: ", i + 1);
-                da_print(arrays[i]);
+            for (int arr_num = 0; arr_num < array_cnt; arr_num++) {
+                printf("Array %d: ", arr_num + 1);
+                da_print(arrays[arr_num]);
                 printf("\n");
             }
 
@@ -347,9 +347,9 @@ void menu() {
             int arr_concat_choice_2;
             printf("\nChoice 2 arrays for concatenation, avaivable arrays: \n");
 
-            for (int i = 0; i < array_cnt; i++) {
-                printf("Array %d: ", i + 1);
-                da_print(arrays[i]);
+            for (int arr_num = 0; arr_num < array_cnt; arr_num++) {
+                printf("Array %d: ", arr_num + 1);
+                da_print(arrays[arr_num]);
                 printf("\n");
             }
 
@@ -448,9 +448,9 @@ void menu() {
             break;
 
         case 0: // Exit programm 
-            for (int i = 0; i < array_cnt; i++) {
-                if (arrays[i] != NULL) {
-                    da_free(arrays[i]);
+            for (int arr_num = 0; arr_num < array_cnt; arr_num++) {
+                if (arrays[arr_num] != NULL) {
+                    da_free(arrays[arr_num]);
                 }
             }
 
