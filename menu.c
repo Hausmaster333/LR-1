@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "dynamic_array.h"
 #include "double_field_info.h"
 #include "int_field_info.h"
@@ -40,7 +41,6 @@ void menu() {
             int create_choice;
             printf("\nWhat types of numbers?\n");
             printf("1. Integers\n2. Doubles\nChoice: ");
-
 
             if (!read_one(INPUT_INT, &create_choice)) {
                 printf("ERROR: Invalid input, try again\n");
@@ -454,10 +454,13 @@ void menu() {
                 }
             }
 
+            free(int_info);
+            free(double_info);
+
             return;
 
         default:
             printf("ERROR: Invalid option number\n");
-        }
-    }
-}
+        } // switch 
+    } // while
+} // menu
