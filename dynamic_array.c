@@ -167,6 +167,8 @@ static void da_elements_swap(DynamicArray* da, size_t first_elem, size_t second_
     memcpy(tmp_ptr, ptr_first_elem, size);
     memcpy(ptr_first_elem, ptr_second_elem, size);
     memcpy(ptr_second_elem, tmp_ptr, size);
+    
+    free(tmp_ptr);
 }
 
 static int da_split(DynamicArray* da, int low, int high) { // Возвращает точку разделения
