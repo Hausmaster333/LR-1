@@ -34,6 +34,10 @@ int is_negative_int(const void* elem) {
     return *(int*)elem < 0;
 }
 
+void destroy_int(void* elem) {
+
+}
+
 static FieldInfo* INT_FIELD_INFO = NULL;
 
 FieldInfo* get_int_field_info() {
@@ -49,6 +53,7 @@ FieldInfo* get_int_field_info() {
         INT_FIELD_INFO->print = print_int;
         INT_FIELD_INFO->square = square_int;
         INT_FIELD_INFO->reverse = reverse_int;
+        INT_FIELD_INFO->destroy = destroy_int;
     }
 
     return INT_FIELD_INFO;    

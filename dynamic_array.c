@@ -25,6 +25,14 @@ DynamicArray* da_create(FieldInfo* fieldinfo) {
 }
 
 void da_free(DynamicArray* da) {
+    if (da == NULL) {
+        return;
+    }
+
+    for (int i = 0; i < da->size; i++) {
+        da->fieldinfo->destroy(da_get(da, i));
+    }
+
     free(da->data);
     free(da);
 }
@@ -68,13 +76,15 @@ void da_append(DynamicArray* da, void* elem) {
 void da_print(DynamicArray* da) {
     
     if (da->size == 0) {
-        printf("Array is empty ");
+        printf("[] ");
         return;
     }
 
+    printf("[ ");
     for (int elem_i = 0; elem_i < da->size; elem_i++) {
         da->fieldinfo->print(da_get_ptr(da, elem_i)); // Вызываем функцию по указателю
     }
+    printf("] ");
 }
 
 DynamicArray* da_concat(DynamicArray* a, DynamicArray* b) {

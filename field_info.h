@@ -11,6 +11,7 @@ typedef struct FieldInfo {
     void (*reverse)(const void* src, void* dest);
     int (*is_positive)(const void* elem);
     int (*is_negative)(const void* elem);
+    void (*destroy)(void* elem);
 } FieldInfo;
 
 #endif

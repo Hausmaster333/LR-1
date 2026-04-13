@@ -34,6 +34,10 @@ int is_negative_double(const void* elem) {
     return *(double*)elem < 0;
 }
 
+void destroy_double(void* elem) {
+
+}
+
 static FieldInfo* DOUBLE_FIELD_INFO = NULL;
 
 FieldInfo* get_double_field_info() {
@@ -49,6 +53,7 @@ FieldInfo* get_double_field_info() {
         DOUBLE_FIELD_INFO->print = print_double;
         DOUBLE_FIELD_INFO->square = square_double;
         DOUBLE_FIELD_INFO->reverse = reverse_double;
+        DOUBLE_FIELD_INFO->destroy = destroy_double;
     }
 
     return DOUBLE_FIELD_INFO;
